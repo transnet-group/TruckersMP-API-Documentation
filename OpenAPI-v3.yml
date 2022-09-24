@@ -1,0 +1,1464 @@
+openapi: 3.0.0
+info:
+  title: TruckersMP API
+  version: '2.0'
+  x-logo:
+    url: https://truckersmp.com/assets/img/truckersmp-logo-black.png
+    href: https://truckersmp.com
+servers:
+  - url: https://api.truckersmp.com/v2
+    description: V2 - Production
+paths:
+  /player/{id}:
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+        name: id
+        in: path
+        required: true
+        description: SteamID64 or TruckersMP ID
+    get:
+      summary: Fetch player information
+      tags:
+        - Players
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/Player'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-player-id
+      description: |-
+        Lookup player information
+  /bans/{id}:
+    parameters:
+      - schema:
+          type: integer
+          format: int64
+        name: id
+        in: path
+        required: true
+        description: SteamID64 or TruckersMP ID
+    get:
+      summary: Fetch player bans
+      tags:
+        - Players
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Ban'
+                        required:
+                          - response
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-bans-id
+      description: |-
+        Latest 5 bans for a selected user if bans are not hidden or user has no bans. Fetch the player information to check if user is currently banned
+
+        For the user to be banned the `expiration` date has to be passed or `active` has to be false.
+  /servers:
+    get:
+      summary: Fetch all the available servers
+      tags:
+        - Servers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      response:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Server'
+      operationId: get-servers
+      description: List of available TruckersMP servers and their status
+  /game_time:
+    get:
+      summary: Fetch the current in-game time
+      tags:
+        - Servers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      game_time:
+                        type: integer
+                        description: Game time returned in minutes (10 real seconds is 1 minute in-game)
+                    required:
+                      - game_time
+      operationId: get-game_time
+      description: |-
+        The current in-game time.
+        Game time is expressed in minutes, where 10 real seconds is 1 minute of in-game time. It is number of minutes since 2015-25-10 15:48:32 CET.
+
+        Note: Game time may not be exact as time will drift.
+  /events:
+    get:
+      summary: Fetch all the current, upcoming, and featured events
+      tags:
+        - Events
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        properties:
+                          featured:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EventIndex'
+                          today:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EventIndex'
+                          now:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EventIndex'
+                          upcoming:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EventIndex'
+      operationId: get-v2-events
+      description: List all of the current, upcoming, and featured TruckersMP events.
+    parameters: []
+  /events/{id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: Event ID
+    get:
+      summary: Fetch the specified event
+      tags:
+        - Events
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/Event'
+                  - $ref: '#/components/schemas/ErrorResponse'
+              examples: {}
+      operationId: get-events-id
+  /events/user/{id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: User ID
+    get:
+      summary: Fetch all the events from the specified user
+      tags:
+        - Events
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EventIndex'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-user-id-events
+  /vtc:
+    get:
+      summary: Fetch all the recent, featured, and featured cover VTCs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      response:
+                        type: object
+                        properties:
+                          recent:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/VTCIndex'
+                          featured:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/VTCIndex'
+                          featured_cover:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/VTCIndex'
+                        required:
+                          - recent
+                          - featured
+                          - featured_cover
+      operationId: get-vtc
+      tags:
+        - Virtual Trucking Companies
+  /vtc/{id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+    get:
+      summary: Fetch the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/VTC'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id
+  /vtc/{id}/news:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+    get:
+      summary: Fetch all the news from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            type: object
+                            properties:
+                              news:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/VTCNewsIndex'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-news
+  /vtc/{id}/news/{news_id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+      - schema:
+          type: integer
+        name: news_id
+        in: path
+        required: true
+        description: News Article ID
+    get:
+      summary: Fetch the specified news article from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/VTCNews'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-news-news_id
+  /vtc/{id}/roles:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+    get:
+      summary: Fetch all the roles from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            type: object
+                            properties:
+                              roles:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/VTCRole'
+                        required:
+                          - response
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-roles
+  /vtc/{id}/role/{role_id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+      - schema:
+          type: integer
+        name: role_id
+        in: path
+        required: true
+        description: Role ID
+    get:
+      summary: Fetch the specified role from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/VTCRole'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-role-role_id
+  /vtc/{id}/members:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+    get:
+      summary: Fetch all the members from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            type: object
+                            properties:
+                              members:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/VTCMember'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-members
+  /vtc/{id}/member/{member_id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+      - schema:
+          type: integer
+        name: member_id
+        in: path
+        required: true
+        description: Member ID
+    get:
+      summary: Fetch the specified member from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/VTCMember'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-member-member_id
+  /vtc/{id}/events:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+    get:
+      summary: Fetch all the events from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EventIndex'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-events
+  /vtc/{id}/events/{event_id}:
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: VTC ID
+      - schema:
+          type: integer
+        name: event_id
+        in: path
+        required: true
+        description: Event ID
+    get:
+      summary: Fetch the specified event from the specified VTC
+      tags:
+        - Virtual Trucking Companies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: '#/components/schemas/Response'
+                      - type: object
+                        properties:
+                          response:
+                            $ref: '#/components/schemas/Event'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      operationId: get-vtc-id-events-event_id
+  /version:
+    get:
+      summary: Fetch the current TruckersMP version for ETS2 and ATS
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+      operationId: get-version
+      tags:
+        - Game Information
+  /rules:
+    get:
+      summary: Fetch the current in-game rules
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      rules:
+                        type: string
+                        description: Markdown of the current in-game rules
+                      revision:
+                        type: number
+                        description: Version number
+                    required:
+                      - rules
+                      - revision
+      operationId: get-rules
+      description: ''
+      tags:
+        - Game Information
+components:
+  schemas:
+    ErrorResponse:
+      description: Basic error response object
+      allOf:
+        - $ref: '#/components/schemas/Response'
+        - type: object
+          properties:
+            descriptor:
+              type: string
+              example: Page not found
+              nullable: true
+            response:
+              type: string
+              deprecated: true
+              nullable: true
+          required:
+            - descriptor
+    Response:
+      description: Basic error response object
+      type: object
+      title: Response
+      properties:
+        error:
+          type: boolean
+          description: If any error occurred during the request
+      required:
+        - error
+    Version:
+      description: ''
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the current version
+        numeric:
+          type: string
+          description: Numeric name of the current version
+        stage:
+          type: string
+          description: Current stage in the development process
+        ets2mp_checksum:
+          type: object
+          required:
+            - dll
+            - adb
+          properties:
+            dll:
+              type: string
+              description: Checksum of core.dll
+            adb:
+              type: string
+              description: Checksum of data1.adb
+        atsmp_checksum:
+          type: object
+          required:
+            - dll
+            - adb
+          properties:
+            dll:
+              type: string
+              description: Checksum of core.dll
+            adb:
+              type: string
+              description: Checksum of data1.adb
+        time:
+          type: string
+          description: The time that the version was released
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:50:00'
+        supported_game_version:
+          type: string
+          description: ETS2 version that is supported
+        supported_ats_game_version:
+          type: string
+          description: ATS version that is supported
+      required:
+        - name
+        - numeric
+        - stage
+        - ets2mp_checksum
+        - atsmp_checksum
+        - time
+        - supported_game_version
+        - supported_ats_game_version
+    Player:
+      description: ''
+      type: object
+      x-examples: {}
+      properties:
+        id:
+          description: The ID of the user requested
+          type: integer
+        name:
+          type: string
+          description: The name of the user
+        avatar:
+          type: string
+          description: URL to the avatar used on the website
+        smallAvatar:
+          type: string
+          description: URL to the avatar used on the website (32px x 32px)
+        joinDate:
+          type: string
+          description: The date and time the user registered (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:12:00'
+        steamID64:
+          type: integer
+          description: The SteamID64 of the user
+          format: int64
+        steamID:
+          type: string
+          description: The SteamID64 of the user
+        discordSnowflake:
+          type: string
+          description: The Discord account linked to the user or null if not linked or private
+          nullable: true
+        displayVTCHistory:
+          type: boolean
+          description: Is the user's VTC History visible
+        groupName:
+          type: string
+          description: The name of the group the user belongs to
+        groupColor:
+          type: string
+          description: The color of the group
+        groupID:
+          description: The ID of the group the user belongs to
+          type: integer
+        banned:
+          type: boolean
+          description: If the user is currently banned
+        bannedUntil:
+          type: string
+          description: The date and time the ban will expire (UTC) or `null` if not banned or ban is permanent
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:15:00'
+          nullable: true
+        bansCount:
+          type: integer
+          description: The number of active bans a user has or `null` if staff
+          nullable: true
+        displayBans:
+          type: boolean
+          description: If the user has their bans hidden
+        patreon:
+          type: object
+          required:
+            - isPatron
+            - active
+          properties:
+            isPatron:
+              type: boolean
+              description: If the user has donated or is currently donating via Patreon
+            active:
+              type: boolean
+              description: If the user has an active Patreon subscription
+            color:
+              type: string
+              description: HEX code for subscribed tier
+              nullable: true
+            tierId:
+              type: integer
+              description: The tier ID of current pledge
+              nullable: true
+            currentPledge:
+              type: integer
+              description: Current pledge in cents
+              nullable: true
+            lifetimePledge:
+              type: integer
+              description: Lifetime pledge in cents
+              nullable: true
+            nextPledge:
+              type: integer
+              description: Next pledge in cents
+              nullable: true
+            hidden:
+              type: boolean
+              description: If user has their Patreon information hidden
+              nullable: true
+        permissions:
+          type: object
+          required:
+            - isStaff
+            - isUpperStaff
+            - isGameAdmin
+            - showDetailedOnWebMaps
+          properties:
+            isStaff:
+              type: boolean
+              description: If the user is a TruckersMP staff member
+            isUpperStaff:
+              type: boolean
+              description: If the user is part of upper staff within the TruckersMP team
+            isGameAdmin:
+              type: boolean
+              description: If the user has Game Moderator permissions
+            showDetailedOnWebMaps:
+              type: boolean
+              description: Always false
+        vtc:
+          type: object
+          required:
+            - id
+            - name
+            - tag
+            - inVTC
+            - memberID
+          properties:
+            id:
+              type: integer
+              description: ID of the VTC the user belongs to or 0 if not in a VTC
+            name:
+              type: string
+              description: Name of the VTC the user belongs to or empty if not in a VTC
+            tag:
+              type: string
+              description: Tag of the VTC the user belongs to or empty if not in a VTC
+            inVTC:
+              type: boolean
+              description: If the user is in a VTC
+            memberID:
+              type: integer
+              description: VTC member ID or 0 if not in a VTC
+        vtcHistory:
+          type: array
+          description: If the user do not allow to see their VTC history `null` will be returned
+          nullable: true
+          items:
+            $ref: '#/components/schemas/VTCHistory'
+      required:
+        - id
+        - name
+        - avatar
+        - smallAvatar
+        - joinDate
+        - steamID64
+        - steamID
+        - displayVTCHistory
+        - groupName
+        - groupColor
+        - groupID
+        - banned
+        - displayBans
+        - patreon
+        - permissions
+        - vtc
+    Ban:
+      description: ''
+      type: object
+      properties:
+        expiration:
+          type: string
+          description: The time the ban will expire
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:51:00'
+        timeAdded:
+          type: string
+          description: The time the ban was issued
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:51:00'
+        active:
+          type: boolean
+          description: If the ban is still active
+        reason:
+          type: string
+          description: The reason for the ban
+        adminName:
+          type: string
+          description: Name of the admin that banned the user
+        adminID:
+          type: integer
+          description: TruckersMP ID for the admin that banned the user
+      required:
+        - expiration
+        - timeAdded
+        - active
+        - reason
+        - adminName
+        - adminID
+    Server:
+      description: ''
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The ID given to the server
+        game:
+          type: string
+          description: What game the server is for (ETS2 or ATS)
+          enum:
+            - ETS2
+            - ATS
+        ip:
+          type: string
+          description: The server ip address
+        port:
+          type: integer
+          description: The port that the server runs on
+        name:
+          type: string
+          description: Name of the server
+        shortname:
+          type: string
+          description: Shortname for the server
+        idprefix:
+          type: string
+          description: Shown in-game in front of a player's ID
+        online:
+          type: boolean
+          description: If the server is online or not
+        players:
+          type: integer
+          description: How many players are currently on the server
+        queue:
+          type: integer
+          description: Amount of players waiting in the queue to join the server
+        maxplayers:
+          type: integer
+          description: The max amount of players allowed on the server at once
+        mapid:
+          type: integer
+          description: The map ID given to the server used by ETS2Map
+        displayorder:
+          type: integer
+          description: Determines the order in which servers are displayed
+        speedlimiter:
+          type: integer
+          description: If the speed limiter is enabled on the server (110 kmh for ETS2 and 80 mph for ATS)
+        collisions:
+          type: boolean
+          description: If server wide collisions is enabled
+        carsforplayers:
+          type: boolean
+          description: If cars are enabled for players
+        policecarsforplayers:
+          type: boolean
+          description: If police cars can be driven by players
+        afkenabled:
+          type: boolean
+          description: If AFK kick is enabled for players
+        event:
+          type: boolean
+          description: If the server is an event server
+        specialEvent:
+          type: boolean
+          description: Determine whether the server hosts special event files (e.g. map edits, special cargos or new paint jobs)
+        promods:
+          type: boolean
+          description: Determine whether the server hosts ProMods
+        syncdelay:
+          description: Server tick rate
+          type: integer
+      required:
+        - id
+        - game
+        - ip
+        - port
+        - name
+        - shortname
+        - online
+        - players
+        - queue
+        - maxplayers
+        - mapid
+        - displayorder
+        - speedlimiter
+        - collisions
+        - carsforplayers
+        - policecarsforplayers
+        - afkenabled
+        - event
+        - specialEvent
+        - promods
+        - syncdelay
+    EventIndex:
+      description: ''
+      type: object
+      properties:
+        id:
+          description: The event's ID
+          type: integer
+        event_type:
+          type: object
+          description: The event's type
+          required:
+            - key
+            - name
+          properties:
+            key:
+              type: string
+              description: The event's type key
+            name:
+              type: string
+              description: The event's type name
+        name:
+          type: string
+          description: The event's name
+        slug:
+          type: string
+          description: The event's slug
+        game:
+          type: string
+          description: The event's game (`ATS` | `ETS2`)
+        server:
+          type: object
+          description: The event's server information
+          required:
+            - id
+            - name
+          properties:
+            id:
+              description: The event's server ID
+              type: integer
+            name:
+              type: string
+              description: The event's server name
+        language:
+          type: string
+          description: The event's main language
+        departure:
+          type: object
+          required:
+            - location
+            - city
+          properties:
+            location:
+              type: string
+              description: The event's departure location
+            city:
+              type: string
+              description: The event's departure city
+        arrive:
+          type: object
+          required:
+            - location
+            - city
+          properties:
+            location:
+              type: string
+              description: The event's arrival location
+            city:
+              type: string
+              description: The event's arrival city
+        start_at:
+          type: string
+          description: The date and time the event starts at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:55:00'
+        banner:
+          type: string
+          description: URL to the banner used on the website
+        map:
+          type: string
+          description: URL to the map used on the website
+        description:
+          type: string
+          description: The event's description in Markdown
+        rule:
+          type: string
+          description: The event's rules in Markdown
+        voice_link:
+          type: string
+          description: URL to the event's voice location
+        external_link:
+          type: string
+          description: external URL specified for the event
+        featured:
+          type: string
+          description: If the event is featured
+        vtc:
+          type: object
+          description: If the Event is hosted by a VTC
+          properties:
+            id:
+              description: The VTC's ID
+              type: integer
+            name:
+              type: string
+              description: The VTC's Name
+          required:
+            - id
+            - name
+        user:
+          type: object
+          required:
+            - id
+            - username
+          properties:
+            id:
+              description: The event's creator's ID
+              type: integer
+            username:
+              type: string
+              description: The event's creator's username
+        attendances:
+          type: object
+          required:
+            - confirmed
+            - unsure
+          properties:
+            confirmed:
+              type: integer
+              description: The number of confirmed attendees
+            unsure:
+              type: integer
+              description: The number of unsure attendees
+        dlcs:
+          type: object
+          description: The event's required DLCs
+          required:
+            - dlc_id
+          properties:
+            dlc_id:
+              type: string
+              description: The DLCs id followed by the DLCs name
+        url:
+          type: string
+          description: URL to the event
+        created_at:
+          type: string
+          description: The date and time the event was created at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:55:00'
+        updated_at:
+          type: string
+          description: The date and time the event was updated at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:55:00'
+      required:
+        - id
+        - event_type
+        - name
+        - slug
+        - game
+        - server
+        - language
+        - departure
+        - arrive
+        - start_at
+        - banner
+        - description
+        - featured
+        - user
+        - attendances
+        - dlcs
+        - url
+        - created_at
+        - updated_at
+    Event:
+      description: ''
+      allOf:
+        - $ref: '#/components/schemas/EventIndex'
+        - type: object
+          properties:
+            attendances:
+              type: object
+              required:
+                - confirmed_users
+                - unsure_users
+              properties:
+                confirmed_users:
+                  type: array
+                  description: The array of confirmed attendees
+                  items:
+                    $ref: '#/components/schemas/EventUser'
+                unsure_users:
+                  type: array
+                  description: The array of unsure attendees
+                  items:
+                    $ref: '#/components/schemas/EventUser'
+          required:
+            - attendances
+    EventUser:
+      description: ''
+      type: object
+      properties:
+        id:
+          description: The event user's ID
+          type: integer
+        username:
+          type: string
+          description: The event user's username
+        following:
+          type: boolean
+          description: Always false
+          default: false
+        created_at:
+          type: string
+          description: The date and time the user marked their attendance at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:00:00'
+        updated_at:
+          type: string
+          description: The date and time the user updated their attendance at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:00:00'
+      required:
+        - id
+        - username
+        - following
+        - created_at
+        - updated_at
+    VTCHistory:
+      description: ''
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID of the VTC
+        name:
+          type: string
+          description: Name of the VTC
+        verified:
+          type: boolean
+          description: If the VTC is verified
+        joinDate:
+          type: string
+          description: Date and time the user joined the VTC (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:16:00'
+        leftDate:
+          type: string
+          description: Date and time the user left the VTC (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 18:16:00'
+    VTCIndex:
+      description: ''
+      type: object
+      properties:
+        id:
+          description: The ID of the VTC
+          type: integer
+        name:
+          type: string
+          description: The ID of the VTC
+        owner_id:
+          description: The owner's ID of the VTC
+          type: integer
+        owner_username:
+          type: string
+          description: The owner's username of the VTC
+        slogan:
+          type: string
+          description: The VTC's slogan
+        tag:
+          type: string
+          description: The VTC's tag
+        website:
+          type: string
+          description: URL to the VTC's website
+        socials:
+          type: object
+          properties:
+            twitter:
+              type: string
+              description: URL to the VTC's Twitter
+            facebook:
+              type: string
+              description: URL to the VTC's Facebook
+            twitch:
+              type: string
+              description: URL to the VTC's Twitch
+            discord:
+              type: string
+              description: URL to the VTC's Discord
+            youtube:
+              type: string
+              description: URL to the VTC's Youtube
+        games:
+          type: object
+          required:
+            - ats
+            - ets
+          properties:
+            ats:
+              type: boolean
+              description: If the VTC allows ATS
+            ets:
+              type: boolean
+              description: If the VTC allows ETS2
+        members_count:
+          description: The VTC's member count
+          type: integer
+        recruitment:
+          type: string
+          description: If the VTC is accepting new members (`Close` | `Open`)
+          enum:
+            - Close
+            - Open
+        language:
+          type: string
+          description: The VTC's main language
+        verified:
+          type: boolean
+          description: If the VTC is verified
+        validated:
+          type: boolean
+          description: If the VTC is validated
+        created:
+          type: string
+          description: The date and time the VTC was created at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:03:00'
+      required:
+        - id
+        - name
+        - owner_id
+        - owner_username
+        - slogan
+        - tag
+        - socials
+        - games
+        - members_count
+        - recruitment
+        - language
+        - verified
+        - validated
+        - created
+    VTC:
+      description: ''
+      allOf:
+        - $ref: '#/components/schemas/VTCIndex'
+        - type: object
+          properties:
+            logo:
+              type: string
+              description: URL to the logo used on the website
+            cover:
+              type: string
+              description: URL to the cover photo used on the website
+            information:
+              type: string
+              description: The VTC's information in Markdown
+            rules:
+              type: string
+              description: The VTC's rules in Markdown
+            requirements:
+              type: string
+              description: The VTC's requirements in Markdown
+          required:
+            - logo
+            - cover
+            - information
+            - rules
+            - requirements
+    VTCNewsIndex:
+      description: ''
+      type: object
+      properties:
+        id:
+          description: The ID of the article
+          type: integer
+        title:
+          type: string
+          description: The title of the article
+        content_summary:
+          type: string
+          description: A summary of the article
+        author_id:
+          description: The user's ID who made the article
+          type: integer
+        author:
+          type: string
+          description: The user's name who made the article
+        pinned:
+          type: boolean
+          description: If the article is pinned
+        updated_at:
+          type: string
+          description: The date and time the article was updated at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:04:00'
+        published_at:
+          type: string
+          description: The date and time the article was published at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:04:00'
+      required:
+        - id
+        - title
+        - content_summary
+        - author_id
+        - author
+        - pinned
+        - updated_at
+        - published_at
+    VTCNews:
+      description: ''
+      allOf:
+        - $ref: '#/components/schemas/VTCNewsIndex'
+        - type: object
+          properties:
+            content:
+              type: string
+              description: The article's content in Markdown
+          required:
+            - content
+    VTCRole:
+      description: ''
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The ID of the role
+        name:
+          type: string
+          description: The name of the role
+        order:
+          type: integer
+          description: The current position of the role
+        owner:
+          type: boolean
+          description: If the role has owner permissions
+        created_at:
+          type: string
+          description: The date and time the role was created (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:06:00'
+        updated_at:
+          type: string
+          description: The date and time the role was updated at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:06:00'
+      required:
+        - id
+        - name
+        - order
+        - owner
+        - created_at
+        - updated_at
+    VTCMember:
+      description: ''
+      type: object
+      properties:
+        id:
+          description: The ID of the VTC Member
+          type: integer
+        user_id:
+          description: The member's TruckersMP ID
+          type: integer
+        username:
+          type: string
+          description: The member's username
+        steam_id:
+          type: integer
+          description: The member's STEAM_ID
+          format: int64
+        role_id:
+          description: The member's role ID
+          type: integer
+        role:
+          type: string
+          description: The member's role name
+        is_owner:
+          type: boolean
+          description: If the member has owner permissions
+        joinDate:
+          type: string
+          description: The date and time the member joined (UTC)
+          example: '2022-09-19 19:06:00'
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+      required:
+        - id
+        - user_id
+        - username
+        - steam_id
+        - role_id
+        - role
+        - joinDate
+  responses: {}
+tags:
+  - name: Welcome!
+    description: Welcome to the TruckersMP API Documentation! If you find something that is either missing or wrong, please don't hesitate to open an Issue or Pull Request with the change on our [GitHub](https://github.com/TruckersMP/API-Documentation)
+    x-traitTag: true
+  - name: API SDKs
+    description: 'As of right now we only have one SDK for PHP which can be found here: [API-Client](https://github.com/TruckersMP/API-Client)'
+    x-traitTag: true
+  - name: Players
+  - name: Servers
+  - name: Events
+  - name: Virtual Trucking Companies
+  - name: Game Information
