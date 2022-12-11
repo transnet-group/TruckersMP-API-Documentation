@@ -1079,6 +1079,7 @@ components:
           required:
             - confirmed
             - unsure
+            - vtcs
           properties:
             confirmed:
               type: integer
@@ -1086,6 +1087,9 @@ components:
             unsure:
               type: integer
               description: The number of unsure attendees
+            vtcs:
+              type: integer
+              description: The number of confirmed VTCs
         dlcs:
           type: object
           description: The event's required DLCs
@@ -1138,6 +1142,7 @@ components:
               type: object
               required:
                 - confirmed_users
+                - confirmed_vtcs
                 - unsure_users
               properties:
                 confirmed_users:
@@ -1145,6 +1150,11 @@ components:
                   description: The array of confirmed attendees
                   items:
                     $ref: '#/components/schemas/EventUser'
+                confirmed_vtcs:
+                  type: array
+                  description: The array of confirmed VTCs
+                  items:
+                    $ref: '#/components/schemas/EventVTC'
                 unsure_users:
                   type: array
                   description: The array of unsure attendees
@@ -1179,6 +1189,36 @@ components:
       required:
         - id
         - username
+        - following
+        - created_at
+        - updated_at
+    EventVTC:
+      description: ''
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The VTC's ID
+        name:
+          type: string
+          description: The VTC's username
+        following:
+          type: boolean
+          description: Always false
+          default: false
+        created_at:
+          type: string
+          description: The date and time the VTC marked their attendance at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:00:00'
+        updated_at:
+          type: string
+          description: The date and time the VTC updated their attendance at (UTC)
+          pattern: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}
+          example: '2022-09-19 19:00:00'
+      required:
+        - id
+        - name
         - following
         - created_at
         - updated_at
@@ -1454,8 +1494,11 @@ tags:
   - name: Welcome!
     description: Welcome to the TruckersMP API Documentation! If you find something that is either missing or wrong, please don't hesitate to open an Issue or Pull Request with the change on our [GitHub](https://github.com/TruckersMP/API-Documentation)
     x-traitTag: true
-  - name: API SDKs
-    description: 'As of right now we only have one SDK for PHP which can be found here: [API-Client](https://github.com/TruckersMP/API-Client)'
+  - name: API SDK
+    description: |
+      We provide two different SDK libraries as of now:
+      - [Feature-rich client (PHP)](https://github.com/TruckersMP/API-Client)
+      - [Type definitions (TypeScript)](https://github.com/TruckersMP/API-Types)
     x-traitTag: true
   - name: Players
   - name: Servers
